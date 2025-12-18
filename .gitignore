@@ -10,3 +10,8 @@
 /.idea/jarRepositories.xml
 /.idea/migrations.xml
 /.idea/codeStyles/
+/.idea/
+/.vscode/
+/buildSrc/.kotlin/sessions
+/app/lite/release/
+repomix-output.txt

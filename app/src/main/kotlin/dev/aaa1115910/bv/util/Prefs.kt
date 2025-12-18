@@ -320,6 +320,10 @@ object Prefs {
                 value.code
             )
         }
+
+    var bufferSeconds: Int
+        get() = runBlocking { dsm.getPreferenceFlow(PrefKeys.prefBufferSecondsRequest).first() }
+        set(value) = runBlocking { dsm.editPreference(PrefKeys.prefBufferSecondsKey, value) }
 }
 
 private object PrefKeys {
@@ -367,6 +371,7 @@ private object PrefKeys {
     val prefEnableFfmpegAudioRenderer = booleanPreferencesKey("enable_ffmpeg_audio_renderer")
     val prefEnableSoftwareVideoDecoder = booleanPreferencesKey("enable_software_video_decoder")
     val prefActionAfterPlayKey = intPreferencesKey("action_after_play")
+    val prefBufferSecondsKey = intPreferencesKey("buffer_seconds")
 
     val prefIsLoginRequest = PreferenceRequest(prefIsLoginKey, false)
     val prefUidRequest = PreferenceRequest(prefUidKey, 0)
@@ -419,4 +424,5 @@ private object PrefKeys {
     val prefEnableFfmpegEndererRequest = PreferenceRequest(prefEnableFfmpegAudioRenderer, false)
     val prefEnableSoftwareVideoDecoderRequest = PreferenceRequest(prefEnableSoftwareVideoDecoder, false)
     val prefActionAfterPlay = PreferenceRequest(prefActionAfterPlayKey, ActionAfterPlayItems.PlayNext.code)
+    val prefBufferSecondsRequest = PreferenceRequest(prefBufferSecondsKey, 120)
 }

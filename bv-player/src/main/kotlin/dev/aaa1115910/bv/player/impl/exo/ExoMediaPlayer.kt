@@ -8,6 +8,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.Renderer
@@ -69,13 +70,29 @@ class ExoMediaPlayer(
                 setMediaCodecSelector(MediaCodecSelector.DEFAULT)
             }
         }
+
+        // 1. 创建自定义的缓冲控制器
+        val bufferMs = options.bufferSeconds * 1000 // 将秒转换为毫秒
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                bufferMs, // minBufferMs: 最小缓冲时长
+                bufferMs, // maxBufferMs: 最大缓冲时长
+                2_500,    // bufferForPlaybackMs: 开始播放所需的缓冲 (默认 2500ms)
+                5_000     // bufferForPlaybackAfterRebufferMs: 卡顿后恢复播放所需的缓冲 (默认 5000ms)
+            )
+            // 可选：如果你的设备内存较小（<2GB），不要开启 targetBufferBytes 覆盖
+            .setTargetBufferBytes(-1) 
+            .build()
+
+        // 2. 将 loadControl 传入 Builder
         mPlayer = ExoPlayer
             .Builder(context)
             .setRenderersFactory(renderersFactory)
+            .setLoadControl(loadControl) // <--- 关键：应用自定义缓冲策略
             .setSeekForwardIncrementMs(1000 * 10)
             .setSeekBackIncrementMs(1000 * 5)
             .build()
-
+        
         initListener()
     }
 

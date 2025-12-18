@@ -54,6 +54,7 @@ fun NetworkSetting(
     var preferOfficialCdn by remember { mutableStateOf(Prefs.preferOfficialCdn) }
     var showProxyHttpServerEditDialog by remember { mutableStateOf(false) }
     var showProxyGRPCServerEditDialog by remember { mutableStateOf(false) }
+    var showBufferConfigDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -121,6 +122,14 @@ fun NetworkSetting(
 
                 item {
                     SettingListItem(
+                        title = stringResource(R.string.settings_network_buffer_title),
+                        supportText = "${Prefs.bufferSeconds} 秒",
+                        onClick = { showBufferConfigDialog = true }
+                    )
+                }
+
+                item {
+                    SettingListItem(
                         title = stringResource(R.string.settings_network_test_title),
                         supportText = stringResource(R.string.settings_network_test_text),
                         onClick = {
@@ -159,6 +168,11 @@ fun NetworkSetting(
                 )
             }
         }
+    )
+    
+    BufferConfigDialog(
+        show = showBufferConfigDialog,
+        onHideDialog = { showBufferConfigDialog = false }
     )
 }
 
@@ -209,6 +223,60 @@ fun ProxyServerEditDialog(
                             .replace("https://", "")
                             .replace("http://", "")
                     )
+                    onHideDialog()
+                }) {
+                    Text(text = stringResource(id = R.string.common_confirm))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = onHideDialog) {
+                    Text(text = stringResource(id = R.string.common_cancel))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun BufferConfigDialog(
+    modifier: Modifier = Modifier,
+    show: Boolean,
+    onHideDialog: () -> Unit
+) {
+    var bufferSeconds by remember(show) { mutableStateOf(Prefs.bufferSeconds.toString()) }
+
+    if (show) {
+        AlertDialog(
+            modifier = modifier,
+            title = { Text(text = stringResource(R.string.settings_network_buffer_title)) },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = bufferSeconds,
+                        onValueChange = { 
+                            // 只允许输入数字
+                            if (it.isEmpty() || it.all { char -> char.isDigit() }) {
+                                bufferSeconds = it
+                            }
+                        },
+                        singleLine = true,
+                        maxLines = 1,
+                        shape = MaterialTheme.shapes.medium,
+                        placeholder = { Text(text = "120") }
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_network_buffer_text),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            },
+            onDismissRequest = onHideDialog,
+            confirmButton = {
+                Button(onClick = {
+                    val seconds = bufferSeconds.toIntOrNull() ?: 120
+                    Prefs.bufferSeconds = seconds
                     onHideDialog()
                 }) {
                     Text(text = stringResource(id = R.string.common_confirm))

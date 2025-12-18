@@ -14,6 +14,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import dev.aaa1115910.bv.player.impl.exo.ExoMediaPlayer
+import dev.aaa1115910.bv.player.impl.vlc.LibVLCPlayer
+import org.videolan.libvlc.util.VLCVideoLayout
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -44,6 +46,20 @@ fun BvVideoPlayer(
                         useController = false
                     }
                     videoPlayerView!!
+                }
+            )
+        }
+
+        is LibVLCPlayer -> {
+            AndroidView(
+                modifier = modifier.fillMaxSize(),
+                factory = { ctx ->
+                    VLCVideoLayout(ctx).apply {
+                        videoPlayer.mediaPlayer?.attachViews(this, null, false, false)
+                    }
+                },
+                onRelease = {
+                    videoPlayer.mediaPlayer?.detachViews()
                 }
             )
         }
